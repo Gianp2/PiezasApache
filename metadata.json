@@ -1,0 +1,6 @@
+{
+  "name": "Label Studio Industrial",
+  "description": "Generador profesional de etiquetas industriales para piezas metálicas y planos CAD con exportación ZPL para Zebra, PDF y procesamiento local.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
