@@ -19,6 +19,7 @@ interface RightPropertiesPanelProps {
   template: LabelTemplate;
   piece: Piece;
   selectedElementId: string | null;
+  onSelectElement: (id: string | null) => void;
   onUpdateElement: (element: LabelElement) => void;
   onDeleteElement: (id: string) => void;
   onUpdatePiece: (piece: Piece) => void;
@@ -30,6 +31,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   template,
   piece,
   selectedElementId,
+  onSelectElement,
   onUpdateElement,
   onDeleteElement,
   onUpdatePiece,
@@ -86,6 +88,23 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   return (
     <div className="w-full lg:w-72 bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 flex flex-col h-full overflow-y-auto">
       
+      <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-200">Elementos de la etiqueta</span>
+          <span className="text-[10px] text-neutral-500">{template.elements.filter(el => el.visible !== false).length}</span>
+        </div>
+        <div className="max-h-36 overflow-y-auto space-y-1" aria-label="Seleccionar elemento para editar">
+          {template.elements.filter(el => el.visible !== false).map((el, index) => (
+            <button type="button" key={el.id} onClick={() => onSelectElement(el.id)}
+              className={`w-full text-left px-2.5 py-2 rounded-md text-xs flex justify-between gap-2 transition-colors ${selectedElementId === el.id ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700'}`}>
+              <span>{index + 1}. {({ drawing: 'Dibujo', code: 'Código', name: 'Nombre', barcode: 'Código de barras', qrcode: 'QR', custom_text: 'Texto', date: 'Fecha', quantity: 'Cantidad', line: 'Línea', rect_box: 'Recuadro' } as Record<string, string>)[el.type] || el.type}</span>
+              {el.locked && <Lock className="w-3 h-3 shrink-0" />}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] text-neutral-500 dark:text-neutral-400">Elegí un elemento para editarlo o eliminarlo.</p>
+      </div>
+
       {/* Panel Header */}
       <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">

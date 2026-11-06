@@ -27,6 +27,7 @@ interface EditorToolbarProps {
   onSelectPiece: (piece: Piece) => void;
   currentTemplate: LabelTemplate;
   onSaveTemplate: () => void;
+  onSaveCurrentTemplate?: () => void;
   zoom: number;
   onZoomChange: (zoom: number) => void;
   showGrid: boolean;
@@ -53,6 +54,7 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onSelectPiece,
   currentTemplate,
   onSaveTemplate,
+  onSaveCurrentTemplate,
   zoom,
   onZoomChange,
   showGrid,
@@ -161,14 +163,22 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
           </button>
         )}
 
+        {onSaveCurrentTemplate && (
+          <button type="button" onClick={onSaveCurrentTemplate}
+            title="Guardar los cambios de la plantilla actual"
+            className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800">
+            <Save className="w-3.5 h-3.5" /> Guardar
+          </button>
+        )}
         {/* Template save button */}
         <button
           onClick={onSaveTemplate}
-          title="Guardar como nueva plantilla"
-          className="p-1.5 rounded text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-          aria-label="Guardar plantilla"
+          title="Guardar una copia como plantilla nueva"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300 transition-colors"
+          aria-label="Guardar como nueva plantilla"
         >
           <Save className="w-3.5 h-3.5" />
+          <span>Guardar plantilla</span>
         </button>
       </div>
 

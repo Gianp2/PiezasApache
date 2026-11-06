@@ -76,24 +76,10 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({
                 }}
                 className="w-full bg-white shadow-md rounded-xs border border-neutral-300 relative p-2 overflow-hidden flex flex-col justify-between group-hover:scale-102 transition-transform"
               >
-                {/* Schematic elements representation */}
-                <div className="flex justify-between items-start gap-1">
-                  <div className="space-y-1 flex-1">
-                    <div className="h-2 w-3/4 bg-neutral-900 rounded-xs" />
-                    <div className="h-1.5 w-1/2 bg-neutral-400 rounded-xs" />
-                  </div>
-                  <div className="w-6 h-6 border border-neutral-900 flex items-center justify-center text-[7px] font-mono">
-                    QR
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-end gap-2 mt-2 flex-1">
-                  <div className="w-12 h-10 border border-dashed border-neutral-700 flex items-center justify-center text-[8px] text-neutral-600">
-                    CAD
-                  </div>
-                  <div className="flex-1 h-6 border border-neutral-800 flex items-center justify-center text-[7px] font-mono">
-                    |||||||||
-                  </div>
+                <div className="flex flex-col items-center justify-center h-full gap-2 text-neutral-900">
+                  <LayoutTemplate className="w-8 h-8 text-neutral-400" />
+                  <span className="text-[9px] font-semibold text-center truncate max-w-full">{tpl.name}</span>
+                  <span className="text-[8px] text-neutral-500 text-center">{tpl.elements.filter(el => el.visible !== false).map(el => ({ drawing: 'Dibujo', name: 'Nombre', code: 'Código', barcode: 'Barras', qrcode: 'QR' } as Record<string,string>)[el.type] || 'Otro').join(' · ')}</span>
                 </div>
               </div>
             </div>
@@ -159,7 +145,7 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({
                   onClick={() => onSelectTemplate(tpl)}
                   className="px-3 py-1.5 text-xs font-semibold text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors"
                 >
-                  Abrir en Editor
+                  Editar / Guardar
                 </button>
               </div>
 

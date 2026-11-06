@@ -106,7 +106,7 @@ export interface Piece {
   name: string;
   material?: string;
   originalFileName: string;
-  fileType: 'dxf' | 'dwg' | 'svg' | 'pdf' | 'png' | 'jpg' | 'bmp';
+  fileType: 'sldprt' | 'dxf' | 'dwg' | 'svg' | 'pdf' | 'png' | 'jpg' | 'bmp';
   fileSize: number;
   createdAt: number;
   templateId?: string;

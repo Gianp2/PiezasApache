@@ -19,3 +19,7 @@ dist/
 connector/**/bin/
 connector/**/obj/
 connector/**/publish/
+# Compilados conector
+connector/**/bin/
+connector/**/obj/
+connector/**/publish/

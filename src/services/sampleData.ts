@@ -1,19 +1,16 @@
+
+
 import { Piece, LabelTemplate } from '../types/index.ts';
 
-// Vector paths for industrial parts
+// Dibujos de ejemplo: no representan archivos CAD importados.
 export const SAMPLE_SVG_FLANGE = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2">
-  <!-- Outer circle flange contour -->
   <circle cx="50" cy="50" r="46" />
-  <!-- Center bore hole -->
   <circle cx="50" cy="50" r="18" />
-  <!-- Bolt circle guide (subtle dashed) -->
   <circle cx="50" cy="50" r="32" stroke-dasharray="2 3" stroke-width="0.8" />
-  <!-- 4 Bolt holes -->
   <circle cx="50" cy="18" r="4" fill="currentColor" />
   <circle cx="50" cy="82" r="4" fill="currentColor" />
   <circle cx="18" cy="50" r="4" fill="currentColor" />
   <circle cx="82" cy="50" r="4" fill="currentColor" />
-  <!-- 4 Diagonal bolt holes -->
   <circle cx="27.4" cy="27.4" r="4" fill="currentColor" />
   <circle cx="72.6" cy="27.4" r="4" fill="currentColor" />
   <circle cx="27.4" cy="72.6" r="4" fill="currentColor" />
@@ -21,23 +18,16 @@ export const SAMPLE_SVG_FLANGE = `<svg viewBox="0 0 100 100" xmlns="http://www.w
 </svg>`;
 
 export const SAMPLE_SVG_BRACKET = `<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2">
-  <!-- Outer bracket profile with chamfer -->
   <path d="M 10 10 L 110 10 L 110 55 L 90 75 L 10 75 Z" />
-  <!-- Weight-reducing cutout slot -->
   <path d="M 40 25 L 80 25 A 8 8 0 0 1 88 33 A 8 8 0 0 1 80 41 L 40 41 A 8 8 0 0 1 32 33 A 8 8 0 0 1 40 25 Z" />
-  <!-- Left mounting holes -->
   <circle cx="22" cy="25" r="5" />
   <circle cx="22" cy="60" r="5" />
-  <!-- Right mounting hole -->
   <circle cx="98" cy="30" r="4" />
 </svg>`;
 
 export const SAMPLE_SVG_PLATE = `<svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2">
-  <!-- Plate with rounded corners -->
   <rect x="6" y="6" width="88" height="68" rx="8" />
-  <!-- Central circular pocket -->
   <circle cx="50" cy="40" r="16" />
-  <!-- 4 Corner fastening countersunk holes -->
   <circle cx="18" cy="18" r="4" />
   <circle cx="82" cy="18" r="4" />
   <circle cx="18" cy="62" r="4" />
@@ -45,11 +35,8 @@ export const SAMPLE_SVG_PLATE = `<svg viewBox="0 0 100 80" xmlns="http://www.w3.
 </svg>`;
 
 export const SAMPLE_SVG_GEAR = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.8">
-  <!-- Gear profile teeth -->
   <path d="M 47 4 L 53 4 L 55 12 L 63 15 L 70 10 L 75 14 L 73 22 L 80 27 L 87 25 L 90 31 L 85 37 L 89 45 L 96 47 L 96 53 L 89 55 L 85 63 L 90 69 L 87 75 L 80 73 L 73 78 L 75 86 L 70 90 L 63 85 L 55 88 L 53 96 L 47 96 L 45 88 L 37 85 L 30 90 L 25 86 L 27 78 L 20 73 L 13 75 L 10 69 L 15 63 L 11 55 L 4 53 L 4 47 L 11 45 L 15 37 L 10 31 L 13 25 L 20 27 L 27 22 L 25 14 L 30 10 L 37 15 L 45 12 Z" />
-  <!-- Pitch circle (reference) -->
   <circle cx="50" cy="50" r="32" stroke-dasharray="2 2" stroke-width="0.8" />
-  <!-- Central shaft bore with keyway -->
   <path d="M 42 38 L 58 38 L 58 43 A 12 12 0 1 1 42 43 Z" />
 </svg>`;
 
@@ -139,7 +126,7 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
   {
     id: 'tpl-80x50-default',
     name: 'Industrial Estándar 80×50 mm',
-    description: 'Código superior, dibujo centrado con QR y código de barras inferior.',
+    description: 'Dibujo, nombre y código de pieza. Los demás elementos se agregan desde el editor.',
     widthMm: 80,
     heightMm: 50,
     orientation: 'landscape',
@@ -172,24 +159,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         textAlign: 'left'
       },
       {
-        id: 'el-qr-1',
-        type: 'qrcode',
-        xMm: 62,
-        yMm: 3,
-        widthMm: 15,
-        heightMm: 15,
-        qrErrorCorrection: 'M'
-      },
-      {
-        id: 'el-divider-1',
-        type: 'line',
-        xMm: 3,
-        yMm: 17,
-        widthMm: 74,
-        heightMm: 1,
-        borderWidthMm: 0.4
-      },
-      {
         id: 'el-drawing-1',
         type: 'drawing',
         xMm: 4,
@@ -198,36 +167,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         heightMm: 28,
         strokeWidthMm: 0.5,
         rotation: 0
-      },
-      {
-        id: 'el-barcode-1',
-        type: 'barcode',
-        xMm: 43,
-        yMm: 21,
-        widthMm: 34,
-        heightMm: 18,
-        barcodeFormat: 'CODE128',
-        includeTextUnderBarcode: true
-      },
-      {
-        id: 'el-date-1',
-        type: 'date',
-        xMm: 43,
-        yMm: 42,
-        widthMm: 20,
-        heightMm: 5,
-        fontSizePt: 7,
-        prefix: 'FECHA: '
-      },
-      {
-        id: 'el-qty-1',
-        type: 'quantity',
-        xMm: 65,
-        yMm: 42,
-        widthMm: 12,
-        heightMm: 5,
-        fontSizePt: 7,
-        prefix: 'CANT: 1'
       }
     ]
   },
@@ -244,15 +183,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
     isCustom: false,
     createdAt: Date.now() - 86400000 * 8,
     elements: [
-      {
-        id: 'el-box-left',
-        type: 'rect_box',
-        xMm: 3,
-        yMm: 3,
-        widthMm: 44,
-        heightMm: 44,
-        borderWidthMm: 0.4
-      },
       {
         id: 'el-drawing-spec',
         type: 'drawing',
@@ -284,36 +214,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         fontSizePt: 8.5,
         fontWeight: 'normal',
         textAlign: 'left'
-      },
-      {
-        id: 'el-barcode-spec',
-        type: 'barcode',
-        xMm: 50,
-        yMm: 20,
-        widthMm: 32,
-        heightMm: 16,
-        barcodeFormat: 'CODE128',
-        includeTextUnderBarcode: true
-      },
-      {
-        id: 'el-qr-spec',
-        type: 'qrcode',
-        xMm: 84,
-        yMm: 20,
-        widthMm: 13,
-        heightMm: 13,
-        qrErrorCorrection: 'M'
-      },
-      {
-        id: 'el-text-trace',
-        type: 'custom_text',
-        xMm: 50,
-        yMm: 40,
-        widthMm: 46,
-        heightMm: 6,
-        customText: 'TRAZABILIDAD Y CONTROL DE CALIDAD OK',
-        fontSizePt: 6.5,
-        fontWeight: 'bold'
       }
     ]
   },
@@ -342,15 +242,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         textAlign: 'left'
       },
       {
-        id: 'el-qr-c',
-        type: 'qrcode',
-        xMm: 45,
-        yMm: 3,
-        widthMm: 12,
-        heightMm: 12,
-        qrErrorCorrection: 'M'
-      },
-      {
         id: 'el-drawing-c',
         type: 'drawing',
         xMm: 3,
@@ -369,16 +260,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         heightMm: 12,
         fontSizePt: 7,
         textAlign: 'left'
-      },
-      {
-        id: 'el-barcode-c',
-        type: 'barcode',
-        xMm: 3,
-        yMm: 31,
-        widthMm: 54,
-        heightMm: 7,
-        barcodeFormat: 'CODE128',
-        includeTextUnderBarcode: false
       }
     ]
   },
@@ -414,15 +295,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         widthMm: 20,
         heightMm: 20,
         strokeWidthMm: 0.4
-      },
-      {
-        id: 'el-qr-m',
-        type: 'qrcode',
-        xMm: 26,
-        yMm: 9,
-        widthMm: 18,
-        heightMm: 18,
-        qrErrorCorrection: 'M'
       }
     ]
   },
@@ -439,15 +311,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
     isCustom: false,
     createdAt: Date.now() - 86400000 * 2,
     elements: [
-      {
-        id: 'el-header-box',
-        type: 'rect_box',
-        xMm: 3,
-        yMm: 3,
-        widthMm: 94,
-        heightMm: 14,
-        borderWidthMm: 0.6
-      },
       {
         id: 'el-code-l',
         type: 'code',
@@ -468,15 +331,6 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         fontSizePt: 8
       },
       {
-        id: 'el-qr-l',
-        type: 'qrcode',
-        xMm: 78,
-        yMm: 4,
-        widthMm: 17,
-        heightMm: 17,
-        qrErrorCorrection: 'H'
-      },
-      {
         id: 'el-drawing-l',
         type: 'drawing',
         xMm: 4,
@@ -484,38 +338,13 @@ export const INITIAL_TEMPLATES: LabelTemplate[] = [
         widthMm: 50,
         heightMm: 40,
         strokeWidthMm: 0.7
-      },
-      {
-        id: 'el-barcode-l',
-        type: 'barcode',
-        xMm: 57,
-        yMm: 26,
-        widthMm: 40,
-        heightMm: 24,
-        barcodeFormat: 'CODE128',
-        includeTextUnderBarcode: true
-      },
-      {
-        id: 'el-date-l',
-        type: 'date',
-        xMm: 4,
-        yMm: 65,
-        widthMm: 30,
-        heightMm: 6,
-        fontSizePt: 8,
-        prefix: 'FABRICADO: '
-      },
-      {
-        id: 'el-qty-l',
-        type: 'quantity',
-        xMm: 60,
-        yMm: 65,
-        widthMm: 35,
-        heightMm: 6,
-        fontSizePt: 9,
-        fontWeight: 'bold',
-        prefix: 'LOTE EXPEDICIÓN: 100 UDS'
       }
     ]
   }
 ];
+
+// Las etiquetas nuevas comienzan con los elementos esenciales.
+// QR y código de barras se agregan manualmente desde el editor.
+INITIAL_TEMPLATES[0].elements = INITIAL_TEMPLATES[0].elements.filter(
+  (el) => el.type === 'drawing' || el.type === 'name' || el.type === 'code'
+);

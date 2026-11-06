@@ -37,16 +37,23 @@ export class UniversalPlanRecognizer {
 
 
 if (/\.sldprt$/i.test(finalName)) {
-  const solidWorksFile =
-    file instanceof File
-      ? file
-      : new File([file], finalName);
-
-  await requestSolidWorksConversion(solidWorksFile);
-
-  throw new Error(
-    "La conversión de SolidWorks todavía no está disponible."
-  );
+  const solidWorksFile = file instanceof File ? file : new File([file], finalName);
+  const realView = await requestSolidWorksConversion(solidWorksFile);
+  const imageAdapter = new ImageAdapter();
+  const drawing = await imageAdapter.process(realView, realView.name, {
+    ...options, removeMargins: true, threshold: options?.threshold ?? 175
+  });
+  drawing.format = 'sldprt';
+  drawing.autoCode = finalName.replace(/\.sldprt$/i, '').toUpperCase();
+  drawing.autoName = finalName.replace(/\.sldprt$/i, '');
+  drawing.originalFileName = finalName;
+  drawing.fileSizeBytes = file.size;
+  drawing.warnings.push('Vista isométrica real exportada desde SolidWorks. Revisá el contraste y la legibilidad antes de imprimir.');
+  return {
+    detection: { detectedFormat: 'sldprt', extensionFromFileName: 'sldprt',
+      isExtensionMismatch: false, confidence: 1, signatureDesc: 'Vista exportada por SolidWorks local' },
+    drawing
+  };
 }
 
 if (/\.(slddrw|sldasm)$/i.test(finalName)) {

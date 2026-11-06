@@ -51,6 +51,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
   const [isSaveTemplatePromptOpen, setIsSaveTemplatePromptOpen] = useState<boolean>(false);
   const [newTemplateName, setNewTemplateName] = useState<string>('');
+  const [saveNotice, setSaveNotice] = useState(false);
 
   useScrollLock(isSaveTemplatePromptOpen);
 
@@ -164,6 +165,24 @@ export const EditorView: React.FC<EditorViewProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo, handleRedo]);
+
+  // Delete selected canvas element without interfering with text fields.
+  useEffect(() => {
+    const handleDelete = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId && !isSaveTemplatePromptOpen) {
+        const element = currentTemplate.elements.find(el => el.id === selectedElementId);
+        if (!element || element.locked) return;
+        e.preventDefault();
+        commitTemplateChange({ ...currentTemplate, elements: currentTemplate.elements.filter(el => el.id !== selectedElementId) });
+        setSelectedElementId(null);
+      }
+      if (e.key === 'Escape' && !isSaveTemplatePromptOpen) setSelectedElementId(null);
+    };
+    window.addEventListener('keydown', handleDelete);
+    return () => window.removeEventListener('keydown', handleDelete);
+  }, [selectedElementId, currentTemplate, commitTemplateChange, isSaveTemplatePromptOpen]);
 
   // Close save template on Escape
   useEffect(() => {
@@ -595,6 +614,18 @@ export const EditorView: React.FC<EditorViewProps> = ({
   return (
     <div className="flex flex-col h-[calc(100vh-61px)] overflow-hidden">
       
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-b border-neutral-200 bg-white dark:bg-neutral-900 dark:border-neutral-800">
+        <p className="text-xs text-neutral-600 dark:text-neutral-300">Seleccioná un elemento en el dibujo o en la lista de la derecha para editarlo. Supr para eliminar.</p>
+        <button type="button" onClick={() => {
+          const essentials = currentTemplate.elements.filter(el => el.type === 'drawing' || el.type === 'name' || el.type === 'code');
+          commitTemplateChange({ ...currentTemplate, elements: essentials });
+          setSelectedElementId(null);
+        }} className="text-xs font-semibold rounded-lg px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+          Dejar solo dibujo y nombre/código
+        </button>
+      </div>
+
+      {saveNotice && <div role="status" className="bg-emerald-50 text-emerald-800 border-b border-emerald-200 text-xs font-semibold px-4 py-2">Plantilla guardada en este navegador.</div>}
       {/* Top Toolbar */}
       <EditorToolbar
         currentPiece={currentPiece}
@@ -602,6 +633,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         onSelectPiece={onSelectPiece}
         currentTemplate={currentTemplate}
         onSaveTemplate={() => setIsSaveTemplatePromptOpen(true)}
+        onSaveCurrentTemplate={() => { onUpdateTemplate(currentTemplate); setSaveNotice(true); window.setTimeout(() => setSaveNotice(false), 2500); }}
         zoom={zoom}
         onZoomChange={setZoom}
         showGrid={showGrid}
@@ -675,6 +707,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             template={currentTemplate}
             piece={currentPiece}
             selectedElementId={selectedElementId}
+              onSelectElement={setSelectedElementId}
             onUpdateElement={handleUpdateElement}
             onDeleteElement={handleDeleteElement}
             onUpdatePiece={onUpdatePiece}

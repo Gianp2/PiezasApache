@@ -1,7 +1,7 @@
 import { CadLayer, PieceBounds } from '../../types/index.ts';
 import { DwgInspectionResult } from './dwgHelper.ts';
 
-export type DetectedFileType = 'dxf' | 'dwg' | 'pdf' | 'svg' | 'png' | 'jpg' | 'bmp' | 'unknown';
+export type DetectedFileType = 'dxf' | 'dwg' | 'pdf' | 'svg' | 'png' | 'jpg' | 'bmp' | 'sldprt' | 'unknown';
 
 export interface DetectionResult {
   detectedFormat: DetectedFileType;

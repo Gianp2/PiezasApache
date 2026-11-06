@@ -267,16 +267,6 @@ export default function App() {
           widthMm: 40,
           heightMm: 34,
           strokeWidthMm: 0.5
-        },
-        {
-          id: `el-barcode-${Date.now()}`,
-          type: 'barcode',
-          xMm: 46,
-          yMm: 12,
-          widthMm: 31,
-          heightMm: 18,
-          barcodeFormat: 'CODE128',
-          includeTextUnderBarcode: true
         }
       ]
     };
