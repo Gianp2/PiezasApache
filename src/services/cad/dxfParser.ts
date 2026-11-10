@@ -23,6 +23,8 @@ interface DxfEntity {
   startAngle?: number;
   endAngle?: number;
   shape?: boolean;
+  closed?: boolean;
+  angle?: number;
   controlPoints?: Array<{ x: number; y: number }>;
 }
 
@@ -103,10 +105,13 @@ export function parseDxfContent(dxfText: string, activeLayers?: Record<string, b
       continue;
     }
 
-    if (ent.type === 'LINE' && ent.start && ent.end) {
-      updateBounds(ent.start.x, ent.start.y);
-      updateBounds(ent.end.x, ent.end.y);
-      svgPaths.push(`M ${ent.start.x} ${-ent.start.y} L ${ent.end.x} ${-ent.end.y}`);
+    if (ent.type === 'LINE' && ((ent.start && ent.end) || (ent.vertices && ent.vertices.length >= 2))) {
+      // dxf-parser represents LINE coordinates as vertices in many DXF versions.
+      const start = ent.start ?? ent.vertices![0];
+      const end = ent.end ?? ent.vertices![1];
+      updateBounds(start.x, start.y);
+      updateBounds(end.x, end.y);
+      svgPaths.push(`M ${start.x} ${-start.y} L ${end.x} ${-end.y}`);
       includedCount++;
     } else if ((ent.type === 'LWPOLYLINE' || ent.type === 'POLYLINE') && ent.vertices && ent.vertices.length > 0) {
       const v = ent.vertices;
@@ -116,7 +121,7 @@ export function parseDxfContent(dxfText: string, activeLayers?: Record<string, b
         const cmd = i === 0 ? 'M' : 'L';
         pathD += `${cmd} ${v[i].x} ${-v[i].y} `;
       }
-      if (ent.shape) {
+      if (ent.shape || ent.closed) {
         pathD += 'Z';
       }
       svgPaths.push(pathD.trim());
@@ -168,17 +173,13 @@ export function parseDxfContent(dxfText: string, activeLayers?: Record<string, b
 
   // Handle empty or zero bounds
   if (minX === Infinity || maxX === -Infinity || includedCount === 0) {
-    // Fallback bounds
-    minX = 0;
-    minY = 0;
-    maxX = 100;
-    maxY = 100;
+    throw new Error('El DXF no contiene geometría compatible visible. No se generó ningún dibujo de ejemplo. Revisá las capas o exportá la pieza como DXF 2D con líneas, arcos y polilíneas.');
   }
 
   const rawWidth = Math.abs(maxX - minX);
   const rawHeight = Math.abs(maxY - minY);
-  const width = rawWidth > 0.001 ? rawWidth : 100;
-  const height = rawHeight > 0.001 ? rawHeight : 100;
+  const width = Math.max(rawWidth, 0.01);
+  const height = Math.max(rawHeight, 0.01);
 
   // Invert Y coordinate for SVG standard coordinate system
   const svgMinX = minX;

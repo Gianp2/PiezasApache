@@ -43,6 +43,7 @@ export const NewPieceModal: React.FC<NewPieceModalProps> = ({
   }, [isOpen, onClose]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadSequence = useRef(0);
 
   const [file, setFile] = useState<File | null>(null);
   const [code, setCode] = useState<string>('');
@@ -69,6 +70,7 @@ export const NewPieceModal: React.FC<NewPieceModalProps> = ({
 
 
 const handleFileDropOrSelect = async (selectedFile: File) => {
+  const requestId = ++uploadSequence.current;
   setFile(selectedFile);
   setErrorMessage(null);
   setDetectionResult(null);
@@ -93,6 +95,8 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         }
       );
 
+    if (requestId !== uploadSequence.current) return;
+    if (!drawing.rawSvg || !drawing.rawSvg.includes("<svg")) throw new Error("No se extrajo un dibujo válido del archivo.");
     setDetectionResult(detection);
     setNormalizedDrawing(drawing);
     setCode(drawing.autoCode);
@@ -105,11 +109,12 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         ? err.message
         : 'No se pudo procesar el archivo.';
 
+    if (requestId !== uploadSequence.current) return;
     setErrorMessage(message);
     setNormalizedDrawing(null);
     setDetectionResult(null);
   } finally {
-    setIsProcessing(false);
+    if (requestId === uploadSequence.current) setIsProcessing(false);
   }
 };
 
@@ -175,6 +180,8 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
   };
 
   const loadSamplePreset = (type: 'flange' | 'bracket') => {
+    ++uploadSequence.current;
+    setFile(null);
     setErrorMessage(null);
     if (type === 'flange') {
       const drawing: NormalizedDrawing = {
@@ -190,7 +197,7 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         holeCount: 9,
         autoCode: 'BRD-M100-INOX',
         autoName: 'Brida Ciega ANSI B16.5',
-        originalFileName: 'BRD_M100_INOX.dxf',
+        originalFileName: 'DEMOSTRACION_BRIDA.svg',
         fileSizeBytes: 24500,
         warnings: []
       };
@@ -203,7 +210,7 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         detectedFormat: 'dxf',
         isExtensionMismatch: false,
         confidence: 1.0,
-        signatureDesc: 'AutoCAD ASCII DXF verificado'
+        signatureDesc: 'Dibujo ilustrativo de demostración, no importado'
       });
     } else {
       const drawing: NormalizedDrawing = {
@@ -219,7 +226,7 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         holeCount: 3,
         autoCode: 'SOPORTE-ANG-V5',
         autoName: 'Soporte Angular Reforzado',
-        originalFileName: 'SOPORTE_ANG_V5.dxf',
+        originalFileName: 'DEMOSTRACION_SOPORTE.svg',
         fileSizeBytes: 18200,
         warnings: []
       };
@@ -232,14 +239,14 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         detectedFormat: 'dxf',
         isExtensionMismatch: false,
         confidence: 1.0,
-        signatureDesc: 'AutoCAD ASCII DXF verificado'
+        signatureDesc: 'Dibujo ilustrativo de demostración, no importado'
       });
     }
   };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim() || !normalizedDrawing) return;
+    if (isProcessing || errorMessage || !code.trim() || !normalizedDrawing || !normalizedDrawing.rawSvg) return;
 
     const piece = planRecognizer.convertNormalizedToPiece(
       {
@@ -273,7 +280,7 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
               <span>Reconocimiento Universal de Planos</span>
             </h2>
             <p className="text-xs text-neutral-500">
-              Suba cualquier archivo sin seleccionar el formato. El sistema analiza firmas binarias y normaliza el dibujo.
+              Subí un plano real: si el formato no es compatible, se informa el error sin sustituirlo por otra pieza.
             </p>
           </div>
           <button
@@ -315,17 +322,17 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
               <Upload className="w-5 h-5" />
             </div>
             <div className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-              {file ? file.name : 'Arrastre aquí cualquier plano o dibujo (DXF, DWG, PDF, SVG, PNG, JPG, BMP)'}
+              {file ? file.name : 'Arrastrá una pieza (DXF, SVG, PDF, PNG, JPG, BMP o SLDPRT con conector)'}
             </div>
             <div className="text-[11px] text-neutral-400 mt-1">
-              Detección automática por cabeceras binarias y contenido (no depende de la extensión).
+              DXF ASCII, SVG, PDF e imágenes se procesan localmente. DWG requiere exportación a DXF; SLDPRT requiere SolidWorks y el conector Windows.
             </div>
           </div>
 
           {/* Quick preset buttons if no file loaded */}
           {!file && !normalizedDrawing && (
             <div className="flex items-center justify-between text-xs p-3 bg-neutral-50 dark:bg-neutral-950 rounded-lg border border-neutral-200 dark:border-neutral-800">
-              <span className="text-neutral-500">¿Desea probar sin subir archivos?</span>
+              <span className="text-neutral-500">Solo demostración (no son piezas importadas):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -582,7 +589,7 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
             </button>
             <button
               type="submit"
-              disabled={!code.trim() || !normalizedDrawing || isProcessing}
+              disabled={!code.trim() || !normalizedDrawing || isProcessing || !!errorMessage}
               className="flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors shadow-xs disabled:opacity-50"
             >
               <span>Generar Etiqueta & Editar</span>

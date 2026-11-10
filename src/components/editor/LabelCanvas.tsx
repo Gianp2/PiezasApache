@@ -278,7 +278,9 @@ export const LabelCanvas: React.FC<LabelCanvasProps> = ({
   return (
     <div 
       ref={containerRef}
-      onClick={() => onSelectElement(null)}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onSelectElement(null);
+      }}
       onTouchStart={handleContainerTouchStart}
       onTouchMove={handleContainerTouchMove}
       onTouchEnd={handleContainerTouchEnd}
@@ -399,6 +401,9 @@ export const LabelCanvas: React.FC<LabelCanvasProps> = ({
           {/* The Thermal Label Physical Sheet */}
           <div
             id="label-editor-canvas"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) onSelectElement(null);
+            }}
             style={{
               width: `${canvasWidthPx}px`,
               height: `${canvasHeightPx}px`,
@@ -433,7 +438,9 @@ export const LabelCanvas: React.FC<LabelCanvasProps> = ({
               return (
                 <div
                   key={el.id}
-                  onMouseDown={(e) => handleMouseDown(e, el)}
+
+onMouseDown={(e) => handleMouseDown(e, el)}
+onClick={(e) => e.stopPropagation()}
                   onTouchStart={(e) => handleTouchStart(e, el)}
                   style={{
                     left: `${left}px`,

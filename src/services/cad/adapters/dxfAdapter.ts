@@ -10,6 +10,10 @@ export class DxfAdapter implements FormatAdapter {
   }
 
   async process(file: File | Blob, fileName: string, options?: AdapterOptions): Promise<NormalizedDrawing> {
+    const signature = new TextDecoder().decode(await file.slice(0, 22).arrayBuffer());
+    if (signature.startsWith('AutoCAD Binary DXF')) {
+      throw new Error('Este archivo es DXF binario. Exportalo desde CAD como DXF ASCII para conservar la geometría; no se generó un dibujo ficticio.');
+    }
     const text = await file.text();
     const result = parseDxfContent(text, options?.activeLayers);
 
@@ -20,6 +24,7 @@ export class DxfAdapter implements FormatAdapter {
     const previewDataUrl = await svgToPreviewDataUrl(result.svg, 300, 300);
 
     const warnings: string[] = [];
+    if (!result.svg.includes('<path')) throw new Error('No se encontró geometría DXF para mostrar.');
     if (result.unsupportedEntities.length > 0) {
       warnings.push(`Entidades complejas no geométricas omitidas: ${result.unsupportedEntities.join(', ')}`);
     }

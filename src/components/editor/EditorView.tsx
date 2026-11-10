@@ -39,6 +39,12 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileEditorTab>('canvas');
   const [zoom, setZoom] = useState<number>(1.25);
+  const [draftWidth, setDraftWidth] = useState(String(currentTemplate.widthMm));
+  const [draftHeight, setDraftHeight] = useState(String(currentTemplate.heightMm));
+  useEffect(() => {
+    setDraftWidth(String(currentTemplate.widthMm));
+    setDraftHeight(String(currentTemplate.heightMm));
+  }, [currentTemplate.widthMm, currentTemplate.heightMm, currentTemplate.id]);
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
 
@@ -151,6 +157,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
   // Keyboard shortcut listener (Ctrl+Z: Undo, Ctrl+Y / Ctrl+Shift+Z: Redo)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
       const isModifier = e.ctrlKey || e.metaKey;
       if (!isModifier) return;
 
@@ -197,6 +205,12 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
   // Update a single element in template
   const handleUpdateElement = (updatedElement: LabelElement) => {
+    // Keep every element within the physical printable label.
+    const widthMm = Math.min(currentTemplate.widthMm, Math.max(1, Number(updatedElement.widthMm) || 1));
+    const heightMm = Math.min(currentTemplate.heightMm, Math.max(1, Number(updatedElement.heightMm) || 1));
+    updatedElement = { ...updatedElement, widthMm, heightMm,
+      xMm: Math.max(0, Math.min(currentTemplate.widthMm - widthMm, Number(updatedElement.xMm) || 0)),
+      yMm: Math.max(0, Math.min(currentTemplate.heightMm - heightMm, Number(updatedElement.yMm) || 0)) };
     const updatedElements = currentTemplate.elements.map((el) =>
       el.id === updatedElement.id ? updatedElement : el
     );
@@ -653,6 +667,30 @@ export const EditorView: React.FC<EditorViewProps> = ({
         onAdaptContent={handleAdaptContent}
         onFitZoom={() => setZoom(calculateFitZoom(currentTemplate.widthMm, currentTemplate.heightMm))}
       />
+
+      {/* Real physical label dimensions: explicit Apply avoids accidental resizing while typing. */}
+      <div className="flex items-center flex-wrap gap-2 px-3 py-2 bg-neutral-50 dark:bg-neutral-950 border-b border-neutral-200 dark:border-neutral-800 text-xs">
+        <span className="font-semibold text-neutral-700 dark:text-neutral-200">Etiqueta (mm)</span>
+        <label className="flex items-center gap-1">Ancho
+          <input aria-label="Ancho de etiqueta en milímetros" type="number" min="15" max="300" step="0.5" value={draftWidth}
+            onChange={(e) => setDraftWidth(e.target.value)} className="w-20 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1" />
+        </label>
+        <span>×</span>
+        <label className="flex items-center gap-1">Alto
+          <input aria-label="Alto de etiqueta en milímetros" type="number" min="10" max="300" step="0.5" value={draftHeight}
+            onChange={(e) => setDraftHeight(e.target.value)} className="w-20 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1" />
+        </label>
+        <button type="button" onClick={() => {
+          const w = Number(draftWidth); const h = Number(draftHeight);
+          if (!Number.isFinite(w) || !Number.isFinite(h) || w < 15 || h < 10 || w > 300 || h > 300) {
+            window.alert('Ingresá medidas válidas: ancho de 15 a 300 mm y alto de 10 a 300 mm.'); return;
+          }
+          handleResizeLabel(w, h);
+        }} className="rounded-md bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-3 py-1.5 font-semibold hover:opacity-85">
+          Aplicar medidas
+        </button>
+        <span className="text-neutral-500">Los elementos se adaptan al tamaño.</span>
+      </div>
 
       {/* Responsive Layout: 3 columns on desktop (>=1024px), single tabbed view on mobile/tablet (<1024px) */}
       <div className="flex-1 flex overflow-hidden relative">
