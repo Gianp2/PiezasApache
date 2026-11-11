@@ -26,7 +26,7 @@ export class DxfAdapter implements FormatAdapter {
     const warnings: string[] = [];
     if (!result.svg.includes('<path')) throw new Error('No se encontró geometría DXF para mostrar.');
     if (result.unsupportedEntities.length > 0) {
-      warnings.push(`Entidades complejas no geométricas omitidas: ${result.unsupportedEntities.join(', ')}`);
+      warnings.push(`Atención: el dibujo puede estar incompleto; entidades sin interpretar: ${result.unsupportedEntities.join(', ')}`);
     }
 
     return {

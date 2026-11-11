@@ -130,6 +130,8 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
 
   const handleToggleLayer = async (layerName: string) => {
     if (!file || !normalizedDrawing) return;
+    const requestId = ++uploadSequence.current;
+    setIsProcessing(true);
     const updated = activeCadLayers.map((l) =>
       l.name === layerName ? { ...l, visible: !l.visible } : l
     );
@@ -142,14 +144,17 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
       const { drawing } = await planRecognizer.recognizeAndProcess(file, file.name, {
         activeLayers: activeMap
       });
-      setNormalizedDrawing(drawing);
+      if (requestId === uploadSequence.current) setNormalizedDrawing(drawing);
     } catch (e) {
-      console.error(e);
+      if (requestId === uploadSequence.current) setErrorMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (requestId === uploadSequence.current) setIsProcessing(false);
     }
   };
 
   const handlePdfPageChange = async (newPage: number) => {
     if (!file) return;
+    const requestId = ++uploadSequence.current;
     setPdfPage(newPage);
     setIsProcessing(true);
     try {
@@ -157,25 +162,29 @@ const handleFileDropOrSelect = async (selectedFile: File) => {
         pdfPageNumber: newPage,
         threshold
       });
-      setNormalizedDrawing(drawing);
+      if (requestId === uploadSequence.current) setNormalizedDrawing(drawing);
     } catch (err: any) {
-      setErrorMessage(err.message);
+      if (requestId === uploadSequence.current) setErrorMessage(err.message);
     } finally {
-      setIsProcessing(false);
+      if (requestId === uploadSequence.current) setIsProcessing(false);
     }
   };
 
   const handleThresholdChange = async (newVal: number) => {
     setThreshold(newVal);
     if (!file) return;
+    const requestId = ++uploadSequence.current;
+    setIsProcessing(true);
     try {
       const { drawing } = await planRecognizer.recognizeAndProcess(file, file.name, {
         threshold: newVal,
         pdfPageNumber: pdfPage
       });
-      setNormalizedDrawing(drawing);
+      if (requestId === uploadSequence.current) setNormalizedDrawing(drawing);
     } catch (e) {
-      console.error(e);
+      if (requestId === uploadSequence.current) setErrorMessage(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (requestId === uploadSequence.current) setIsProcessing(false);
     }
   };
 

@@ -51,9 +51,10 @@ export const LabelCanvas: React.FC<LabelCanvasProps> = ({
 
   // Handle Mouse Drag Start
   const handleMouseDown = (e: React.MouseEvent, el: LabelElement) => {
+    e.preventDefault();
     e.stopPropagation();
     onSelectElement(el.id);
-    if (el.locked) return;
+    if (el.locked || e.button !== 0) return;
 
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
@@ -76,6 +77,7 @@ export const LabelCanvas: React.FC<LabelCanvasProps> = ({
 
   // Handle Resize Handle Mouse Start
   const handleResizeStart = (e: React.MouseEvent, handle: string) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!selectedElement || selectedElement.locked) return;
 

@@ -1,5 +1,5 @@
 import { Piece, LabelTemplate, PrintJob, ZebraPrinterConfig } from '../types/index.ts';
-import { INITIAL_PIECES, INITIAL_TEMPLATES } from './sampleData.ts';
+import { INITIAL_TEMPLATES } from './sampleData.ts';
 
 const DB_NAME = 'LabelStudioIndustrialDB';
 const DB_VERSION = 1;
@@ -7,7 +7,7 @@ const DB_VERSION = 1;
 export const DEFAULT_ZEBRA_CONFIG: ZebraPrinterConfig = {
   connectionType: 'browser_print',
   browserPrintUrl: 'http://127.0.0.1:9100',
-  selectedPrinterName: 'Zebra ZD420 (203dpi)',
+  selectedPrinterName: '',
   dpi: 203,
   darkness: 20,
   printSpeed: 4,
@@ -54,18 +54,9 @@ function openDB(): Promise<IDBDatabase> {
 export async function initDatabase(): Promise<void> {
   const db = await openDB();
 
-  // Check pieces
-  const pieces = await getAllPieces();
-  if (pieces.length === 0) {
-    const tx = db.transaction('pieces', 'readwrite');
-    const store = tx.objectStore('pieces');
-    for (const piece of INITIAL_PIECES) {
-      store.add(piece);
-    }
-    await new Promise((res) => {
-      tx.oncomplete = res;
-    });
-  }
+  // Never insert fictitious pieces into the real production library.
+  // Existing records are preserved, including older demonstration entries,
+  // which users may remove individually from the library.
 
   // Check templates
   const templates = await getAllTemplates();

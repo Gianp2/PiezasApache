@@ -48,4 +48,52 @@ app.MapPost("/convert", async (HttpRequest request) => {
         message = "Vista real exportada desde SolidWorks. Verificá la vista previa antes de imprimir."
     });
 }).DisableAntiforgery();
+// Optional DWG conversion using a locally installed ODA File Converter.
+// The conversion is never simulated; failures return an actionable error.
+app.MapPost("/convert-dwg", async (HttpRequest request) => {
+    var origin = request.Headers.Origin.ToString().TrimEnd('/');
+    if (!allowedOrigins.Contains(origin)) return Results.StatusCode(403);
+    if (!request.HasFormContentType) return Results.BadRequest(new { message = "Se esperaba un DWG." });
+    var form = await request.ReadFormAsync();
+    var file = form.Files.GetFile("file");
+    if (file is null || file.Length == 0 || file.Length > maxFileSize ||
+        !Path.GetExtension(file.FileName).Equals(".dwg", StringComparison.OrdinalIgnoreCase))
+        return Results.BadRequest(new { message = "Archivo DWG inválido o mayor a 25 MB." });
+    var converter = Environment.GetEnvironmentVariable("ODA_CONVERTER_PATH");
+    if (string.IsNullOrWhiteSpace(converter) || !System.IO.File.Exists(converter))
+        return Results.Json(new { message = "No está configurado ODA File Converter. Instalalo y definí ODA_CONVERTER_PATH con la ruta completa al ejecutable." }, statusCode: 503);
+    var root = Path.Combine(Path.GetTempPath(), "LabelStudioDWG", Guid.NewGuid().ToString("N"));
+    var input = Path.Combine(root, "input");
+    var output = Path.Combine(root, "output");
+    Directory.CreateDirectory(input); Directory.CreateDirectory(output);
+    try {
+        var source = Path.Combine(input, "plano.dwg");
+        await using (var stream = System.IO.File.Create(source)) await file.CopyToAsync(stream);
+        using var process = new System.Diagnostics.Process();
+        process.StartInfo = new System.Diagnostics.ProcessStartInfo {
+            FileName = converter,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true
+        };
+        foreach (var arg in new[] { input, output, "ACAD2018", "DXF", "0", "1" })
+            process.StartInfo.ArgumentList.Add(arg);
+        process.Start();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        try { await process.WaitForExitAsync(timeout.Token); }
+        catch (OperationCanceledException) { if (!process.HasExited) process.Kill(true); return Results.Json(new { message = "ODA tardó demasiado en convertir el DWG." }, statusCode: 504); }
+        var dxf = Directory.GetFiles(output, "*.dxf", SearchOption.AllDirectories).FirstOrDefault();
+        if (process.ExitCode != 0 || dxf is null)
+            return Results.Json(new { message = "ODA no pudo convertir el plano. Revisá la versión y la integridad del DWG." }, statusCode: 422);
+        var text = await System.IO.File.ReadAllTextAsync(dxf);
+        if (!text.Contains("SECTION") || !text.Contains("ENTITIES"))
+            return Results.Json(new { message = "ODA generó un DXF no ASCII o sin entidades; exportá a DXF ASCII." }, statusCode: 422);
+        return Results.Text(text, "text/plain");
+    } catch (Exception ex) {
+        return Results.Json(new { message = "Falló la conversión DWG: " + ex.Message }, statusCode: 422);
+    } finally {
+        try { Directory.Delete(root, true); } catch { /* temp cleanup best effort */ }
+    }
+}).DisableAntiforgery();
 app.Run();
